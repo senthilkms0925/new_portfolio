@@ -1288,7 +1288,7 @@ body.light #ist-clock{background:rgba(245,240,255,0.92);}
     <div class="chat-avatar">🛡️</div>
     <div class="chat-head-info">
       <div class="chat-head-name">Senthil's AI Assistant</div>
-      <div class="chat-head-status"><span class="chat-head-dot"></span>Online — Ask me anything</div>
+      <div class="chat-head-status"><span class="chat-head-dot"></span>Free AI &bull; No API key needed</div>
     </div>
     <button class="chat-close" onclick="toggleChat()">[ × ]</button>
   </div>
@@ -1787,33 +1787,209 @@ function copyVal(btn,val){
 // AI CHAT
 // ═══════════════════════════════════════
 let chatOpen=false;
-function toggleChat(){chatOpen=!chatOpen;document.getElementById('chat-panel').classList.toggle('open',chatOpen);}
-function sendSug(btn){document.getElementById('chat-input').value=btn.textContent;sendChat();}
+
+// ── SMART FREE CHATBOT ──
+// No API key, no internet needed. Works 100% locally.
+
+const KB = {
+  name: ['senthilkumar','your name','who are you','introduce','about you'],
+  role: ['role','position','job title','designation','what do you do','work as'],
+  experience: ['experience','years','how long','exp','worked','tenure'],
+  skills: ['skill','tech','technology','stack','know','proficient','expertise','tools','languages'],
+  linux: ['linux','ubuntu','centos','rhel','red hat','server','servers','sysadmin','system admin'],
+  security: ['security','cybersecurity','firewall','fail2ban','ufw','intrusion','pentest','penetration','cwasp','vulnerability','threat','hacking'],
+  network: ['network','networking','vlan','lan','wan','dns','dhcp','vpn','routing','switch','router'],
+  automation: ['automation','automate','bash','script','scripting','ansible','cron','pipeline'],
+  projects: ['project','built','created','developed','deployed','work on','worked on'],
+  education: ['education','degree','college','university','study','studied','qualification'],
+  certification: ['certification','certified','cert','cwasp','comptia','ceh'],
+  contact: ['contact','phone','email','reach','call','mail','number'],
+  location: ['location','city','where','based','chennai','tamil nadu','india'],
+  available: ['available','hire','hiring','open','looking','job','opportunity','work','remote','onsite','joining'],
+  salary: ['salary','ctc','pay','compensation','package','expect'],
+  notice: ['notice','notice period','join','joining','when can','start'],
+  uptime: ['uptime','availability','downtime','sla'],
+  database: ['database','mysql','mariadb','db','sql','query'],
+  webserver: ['apache','nginx','web server','hosting','host'],
+  cloud: ['cloud','aws','docker','container','kubernetes'],
+  monitoring: ['monitor','nagios','zabbix','alert','log','rsyslog','siem'],
+  github: ['github','git','code','repository','repo'],
+  hello: ['hi','hello','hey','good morning','good afternoon','good evening','greetings','sup','hola'],
+  thanks: ['thank','thanks','thx','appreciate','great','awesome','perfect','nice','good'],
+  help: ['help','what can','what do','commands','options','ask','how to use'],
+};
+
+const ANSWERS = {
+  hello: [
+    "👋 Hello! I'm Senthilkumar's virtual assistant. Ask me about his skills, experience, projects, or availability — I'm here to help!",
+    "Hi there! 🛡️ I can tell you all about Senthilkumar's Linux & cybersecurity expertise. What would you like to know?",
+    "Hey! Great to connect. I'm here to answer any questions about Senthilkumar K — fire away! 🚀"
+  ],
+  name: [
+    "I'm the virtual assistant for **Senthilkumar K** — a Linux System Administrator & Cybersecurity professional based in Chennai, India. He has 3+ years of experience at Novalnet E-Solutions.",
+    "Senthilkumar K is a Linux SysAdmin & Security professional with 3+ years of hands-on experience managing 50+ servers in production."
+  ],
+  role: [
+    "Senthilkumar works as a **Linux System Administrator** with a strong cybersecurity focus. His day-to-day involves managing 50+ Linux servers, hardening security, configuring networks, and automating operations.",
+    "His role covers Linux server management, network administration, security hardening, and infrastructure automation at Novalnet E-Solutions Pvt Ltd."
+  ],
+  experience: [
+    "Senthilkumar has **3+ years** of professional experience (Aug 2022 – Present) at Novalnet E-Solutions Pvt Ltd in Chennai. He manages 50+ production Linux servers with 99.9% uptime.",
+    "3+ years in Linux administration and cybersecurity. He's been at Novalnet E-Solutions since August 2022, managing enterprise-grade infrastructure."
+  ],
+  skills: [
+    "**Core Skills:**\n🐧 Linux (Ubuntu, CentOS, RHEL) — 95%\n🔒 Firewall/IDS (Fail2ban, UFW) — 92%\n⚙️ Bash Scripting — 90%\n🌐 Network Admin — 88%\n🛡️ Penetration Testing (CWASP) — 78%\n\nTools: Nagios, Zabbix, Nmap, Wireshark, Ansible, Docker, Git, MySQL, Nginx, Apache",
+    "He's highly proficient in Linux administration, security hardening, Bash automation, network configuration, and web server management. CWASP certified in penetration testing."
+  ],
+  linux: [
+    "Senthilkumar manages **50+ Linux servers** (Ubuntu, CentOS, Red Hat) in production. He maintains 99.9% uptime, handles patching, backups, performance tuning, and systemd service management.",
+    "Strong Linux expertise — 95% proficiency across Ubuntu, CentOS, and RHEL. Experienced with systemd, journald, cron, rsync, and all core Linux administration tasks."
+  ],
+  security: [
+    "Security is his speciality! He's **CWASP certified** in Network Intelligence (web app security, pen testing, OWASP Top 10). He uses Fail2ban, UFW, Rsyslog, and custom IDS rules — blocked 500+ malicious IPs in production.",
+    "Cybersecurity skills: Fail2ban, UFW, Firewalld, Rsyslog correlation rules, vulnerability assessments, penetration testing, and log-based threat detection. Reduced intrusions by 80%+ in production."
+  ],
+  network: [
+    "Strong network administration skills — LAN/WAN/VLAN configuration, routing protocols, DNS, DHCP, VPN, SSH, FTP, and enterprise router/switch management.",
+    "He configures and maintains full network infrastructure including VLANs, routing protocols, DNS/DHCP, VPN tunnels, and enterprise switches."
+  ],
+  automation: [
+    "Automation is one of his strongest areas! He's built Bash scripts and Ansible playbooks that reduced manual operations by **60%**. Cut patch management from 8 hours to 1 hour.",
+    "He automates monitoring, backups, patch management, and reporting using Bash, cron, Ansible, and systemd. 60% reduction in manual effort achieved in production."
+  ],
+  projects: [
+    "Key projects:\n📊 Server Monitoring System — automated alerts for 50+ servers\n🛡️ Security Alert Engine — blocked 500+ IPs, 80% fewer intrusions\n🔧 Patch Management — 8h → 1h with Ansible\n🌐 Web Hosting Stack — 99.9% uptime, zero-downtime deploys\n🗄️ MySQL Performance Monitor — weekly automated reports",
+    "He has 6 production projects including a server monitoring automation system, security alert engine, patch management automation, and web application hosting stack."
+  ],
+  education: [
+    "**B.A. Computer Application** — Sree Saraswathi Thyagaraj College, Pollachi (2017–2020). Strong foundation in computing, networking, databases, and information systems.",
+    "Graduated with a B.A. in Computer Application from SST College, Pollachi in 2020."
+  ],
+  certification: [
+    "**CWASP Network Intelligence** — certified in web application security, penetration testing, OWASP Top 10, and ethical hacking (2023). Currently preparing for CompTIA Security+ / CEH.",
+    "CWASP certified (2023) covering web app security and pen testing. Also targeting CompTIA Security+ and CEH — currently 45% through preparation."
+  ],
+  contact: [
+    "📞 **Phone:** +91 9600366356\n📧 **Email:** senthil.sysadmin@gmail.com\n📍 **Location:** Chennai, Tamil Nadu, India\n\nFeel free to reach out — he's actively looking for opportunities!",
+    "You can reach Senthilkumar at +91 9600366356 or senthil.sysadmin@gmail.com. Based in Chennai, open to remote and onsite roles."
+  ],
+  location: [
+    "Senthilkumar is based in **Chennai, Tamil Nadu, India**. He's open to both remote work and onsite opportunities.",
+    "Chennai, Tamil Nadu 📍. Available for remote roles anywhere and onsite roles in Chennai/India."
+  ],
+  available: [
+    "✅ **Yes, Senthilkumar is actively open to work!** He's looking for roles in Linux Administration, Network Security, and IT Infrastructure. Available for both remote and onsite positions.",
+    "He's actively seeking new opportunities in Linux SysAdmin, cybersecurity, and DevOps/infrastructure roles. Open to remote and onsite — feel free to reach out!"
+  ],
+  salary: [
+    "Salary expectations are open to discussion based on the role and company. Please reach out directly at +91 9600366356 or senthil.sysadmin@gmail.com to discuss.",
+    "He's flexible on compensation depending on the role, responsibilities, and growth opportunity. Best to discuss directly — +91 9600366356."
+  ],
+  notice: [
+    "Notice period details can be discussed during the interview process. Please contact at +91 9600366356 or senthil.sysadmin@gmail.com for specifics.",
+    "Available to discuss joining timeline directly. Reach out at senthil.sysadmin@gmail.com or +91 9600366356."
+  ],
+  uptime: [
+    "He maintains **99.9% server uptime** across 50+ production Linux servers at Novalnet E-Solutions — a key achievement he's proud of.",
+    "99.9% uptime SLA achieved across the entire server fleet through proactive monitoring, automated alerting, and rapid incident response."
+  ],
+  database: [
+    "Experienced with **MySQL and MariaDB** — performance tuning, slow query analysis, backup strategies, and replication. Built an automated MySQL performance monitor with weekly PDF reports.",
+    "MySQL/MariaDB DBA skills include slow query optimization, performance monitoring, automated backups, and high-availability replication setup."
+  ],
+  webserver: [
+    "Proficient in **Apache and Nginx** — production hosting, SSL/TLS configuration, reverse proxying, load balancing, and server hardening. Achieved 99.9% uptime with zero-downtime blue-green deployments.",
+    "He manages Apache and Nginx web servers in production with full SSL/TLS automation, load balancing, and hardened security configurations."
+  ],
+  cloud: [
+    "Exploring **AWS** (EC2, S3, IAM basics) and Docker containerisation as part of his continuous learning. Strong foundation in Linux makes cloud adoption natural.",
+    "Basic AWS knowledge and Docker experience. Actively expanding cloud skills alongside his strong Linux and automation background."
+  ],
+  monitoring: [
+    "Uses **Nagios, Zabbix, and Rsyslog** for monitoring. Built a custom server monitoring system that collects CPU/RAM/disk/network metrics with API-integrated alerts firing in under 30 seconds.",
+    "Monitoring stack includes Nagios, Zabbix, and custom Bash-based metric collectors with real-time API alerting — covers 50+ servers."
+  ],
+  github: [
+    "He uses **Git** for version control across all his automation scripts, Ansible playbooks, and deployment configurations.",
+    "Git is part of his daily workflow for managing Bash scripts, Ansible playbooks, web server configs, and patch management automation."
+  ],
+  thanks: [
+    "You're welcome! 😊 Feel free to ask anything else about Senthilkumar.",
+    "Happy to help! Is there anything else you'd like to know?",
+    "Glad I could help! Don't hesitate to reach out at senthil.sysadmin@gmail.com if you want to connect with Senthilkumar directly."
+  ],
+  help: [
+    "You can ask me about:\n👤 About Senthilkumar\n💼 Experience & Role\n🛠️ Skills & Tech Stack\n📁 Projects\n🎓 Education & Certifications\n📞 Contact Details\n✅ Availability & Hiring\n💰 Salary & Notice Period\n\nJust type naturally — I'll understand!",
+  ],
+  fallback: [
+    "I'm not sure about that specifically. Try asking about his skills, experience, projects, certifications, or contact details! 😊",
+    "Hmm, I don't have that info. You can ask about his Linux skills, security expertise, projects, availability, or how to contact him.",
+    "That's a bit outside my knowledge! Feel free to reach Senthilkumar directly at senthil.sysadmin@gmail.com or +91 9600366356 for detailed discussions."
+  ]
+};
+
+function matchIntent(input){
+  const lower = input.toLowerCase().trim();
+  for(const [intent, keywords] of Object.entries(KB)){
+    for(const kw of keywords){
+      if(lower.includes(kw)) return intent;
+    }
+  }
+  return 'fallback';
+}
+
+function getBotReply(input){
+  const intent = matchIntent(input);
+  const replies = ANSWERS[intent] || ANSWERS.fallback;
+  return replies[Math.floor(Math.random() * replies.length)];
+}
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chat-panel').classList.toggle('open',chatOpen);
+}
+
+function appendBotMsg(html){
+  const msgs = document.getElementById('chat-msgs');
+  const div = document.createElement('div');
+  div.className = 'chat-msg bot';
+  div.style.whiteSpace = 'pre-line';
+  div.innerHTML = html.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('chat-typing').classList.remove('show');
+}
+
+function sendSug(btn){
+  document.getElementById('chat-input').value = btn.textContent;
+  sendChat();
+}
+
 async function sendChat(){
-  const inp=document.getElementById('chat-input'),val=inp.value.trim();
-  if(!val)return;inp.value='';
-  const msgs=document.getElementById('chat-msgs');
-  const uDiv=document.createElement('div');uDiv.className='chat-msg user';uDiv.textContent=val;msgs.appendChild(uDiv);
-  const typing=document.getElementById('chat-typing');typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`You are the AI assistant for Senthilkumar K's portfolio. Answer questions about him concisely and professionally.
+  const inp = document.getElementById('chat-input');
+  const val = inp.value.trim();
+  if(!val) return;
+  inp.value = '';
 
-PROFILE:
-- Name: Senthilkumar K
-- Role: Linux System Administrator & Cybersecurity Professional
-- Location: Chennai, Tamil Nadu, India
-- Experience: 3+ years at Novalnet E-Solutions Pvt Ltd (Aug 2022–Present)
-- Education: B.A. Computer Application, Sree Saraswathi Thyagaraj College (2017–2020)
-- Certification: CWASP Network Intelligence (web app security, pen testing)
-- Skills: Linux (Ubuntu/CentOS/RHEL), Bash scripting, Nginx/Apache, MySQL/MariaDB, Fail2ban, UFW, VPN, SSH, DNS/DHCP, Ansible, Nmap, Wireshark, Docker, Git
-- Projects: Server monitoring automation, web hosting stack, MySQL performance monitor, secure shutdown system, security alert engine, patch management automation
-- Status: Open to work, available for remote roles
-- Phone: +91 9600366356
+  const msgs = document.getElementById('chat-msgs');
 
-Keep responses short (2-4 sentences), use technical language appropriate for IT/security hiring managers. Stay in character as his professional assistant.`,messages:[{role:'user',content:val}]})});
-    const data=await res.json();typing.classList.remove('show');
-    const bDiv=document.createElement('div');bDiv.className='chat-msg bot';bDiv.textContent=data.content?.[0]?.text||'Sorry, I couldn\'t get a response right now.';msgs.appendChild(bDiv);msgs.scrollTop=msgs.scrollHeight;
-  }catch(err){typing.classList.remove('show');const bDiv=document.createElement('div');bDiv.className='chat-msg bot';bDiv.textContent='Connection issue. Please try again shortly.';msgs.appendChild(bDiv);}
+  // User bubble
+  const uDiv = document.createElement('div');
+  uDiv.className = 'chat-msg user';
+  uDiv.textContent = val;
+  msgs.appendChild(uDiv);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Show typing indicator
+  document.getElementById('chat-typing').classList.add('show');
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Simulate natural typing delay
+  const delay = 600 + Math.random() * 600;
+  setTimeout(() => {
+    const reply = getBotReply(val);
+    appendBotMsg(reply);
+  }, delay);
 }
 
 function exportPDF(){
